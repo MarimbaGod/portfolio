@@ -3,6 +3,7 @@ services:
   fastapi:
     environment:
       CORS_HOST: http://localhost:3000
+      DATABASE_URL: postgresql://marimbagod:postgres@db:5432/postgres
     build:
       context: api
       dockerfile: Dockerfile.dev
@@ -10,6 +11,8 @@ services:
       - 8000:8000
     volumes:
       - ./api:/app
+    depends_on:
+      - postgres
 
   ghi:
     image: node:lts-bullseye
@@ -25,3 +28,16 @@ services:
       HOST: "0.0.0.0"
       PUBLIC_URL: http://localhost:3000
       REACT_APP_API_HOST: ${REACT_APP_API_HOST}
+
+  postgres:
+    image: postgres:14.5-bullseye
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: marimbagod
+      POSTGRES_PASSWORD: marimbagod
+
+  volumes:
+    postgres_data:
+      external: true
