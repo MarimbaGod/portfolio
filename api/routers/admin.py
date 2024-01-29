@@ -7,20 +7,24 @@ from fastapi import (
     HTTPException
 )
 import os
-import bcrypt
-from jwtdown_fastapi.authentication import Token
+from queries.projects import Project, ProjectInDB, ProjectRepository
+
+
+# from jwtdown_fastapi.authentication import Token
+from fastapi.security import OAuth2PasswordRequestForm
 from queries.projects import ProjectRepository
 from pydantic import BaseModel
-from authenticator import authenticate_user
+from authenticator import authenticate_user, validate_token
 from typing import Union, List
 import jwt
 from datetime import datetime, timedelta
 
 
-class AdminToken(Token):
-    token: Token
+# class AdminToken(Token):
+#     token: Token
 
 router = APIRouter()
+project_repo = ProjectRepository()
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
@@ -33,7 +37,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-@router.get("/admin/login")
+@router.post("/admin/login")
 async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
     if authenticate_user(form_data.username, form_data.password):
         #Generate JWT Token
@@ -41,3 +45,9 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
         return {"access_token": access_token, "token_type": "bearer"}
     else:
         raise HTTPException(status_code=401, detail="Incorrect Credentials")
+
+
+@router.post("/admin/projects", response_model=ProjectInDB)
+async def add_project(project: Project, _ = Depends(validate_token)):
+    new_project = project_repo.add_project(project)
+    return new_project

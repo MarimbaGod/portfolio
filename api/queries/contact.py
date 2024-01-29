@@ -1,8 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from queries.pool import pool
 
-class ContactForm(BaseModel):
+class Contact(BaseModel):
     name: str
-    email: str
+    phone: Optional[str] # Since phone numbers can be input by users in many ways
+    email: EmailStr
     message: str
+
+class ContactInDB(Contact):
+    id: int

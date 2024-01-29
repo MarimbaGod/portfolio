@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from routers import projects, contact
+from routers import admin
 # from authenticator import authenticator
 
 
 app = FastAPI()
-
 
 
 @app.get("/")
@@ -22,5 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(contact.router)
-app.include_router(projects.router)
+# app.include_router(contact.router)
+# app.include_router(projects.router)
+app.include_router(admin.router)

@@ -2,22 +2,17 @@ from pydantic import BaseModel
 from typing import Optional, Union, List
 from queries.pool import pool
 
-class ProjectIn(BaseModel):
+
+class Project(BaseModel):
     title: str
     img_url: Optional[str]
     description: str
-    github_url: Optional[str]
+    github_url: str
     live_url: Optional[str]
 
 
-class ProjectOut(BaseModel):
+class ProjectInDB(Project):
     id: int
-    title: str
-    img_url: Optional[str]
-    description: str
-    github_url: Optional[str]
-    live_url: Optional[str]
-
 
 class Error(BaseModel):
     message: str
@@ -54,3 +49,33 @@ class ProjectRepository:
         except Exception as e:
             print(e)
             return {"message": "Something went wrong!"}
+
+    def add_project(self, project: Project) -> ProjectInDB:
+        try:
+            with pool.connection() as conn:
+                with conn.cursor() as db:
+                    result = db.execute(
+                        """
+                        INSERT INTO project
+                            (title,
+                            img_url,
+                            description,
+                            github_url,
+                            live_url)
+                        VALUES
+                            (%s, %s, %s, %s, %s)
+                        RETURNING *;
+                        """,
+                        [
+                            project.title,
+                            project.img_url,
+                            project.description,
+                            project.github_url,
+                            project.live_url,
+                        ],
+                    )
+                    project_data = result.fetchone()
+                    return ProjectInDB(**project_data)
+        except Exception as e:
+            print(e)
+            return {"message": "Couldn't add the project"}

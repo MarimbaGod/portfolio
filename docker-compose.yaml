@@ -2,8 +2,11 @@
 services:
   fastapi:
     environment:
+      USERNAME: ${USERNAME}
+      HASHED_PASSWORD: ${HASHED_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
       CORS_HOST: http://localhost:3000
-      DATABASE_URL: postgresql://marimbagod:postgres@db:5432/postgres
+      DATABASE_URL: postgresql://marimbagod:marimbagod@postgres:5432/postgres
     build:
       context: api
       dockerfile: Dockerfile.dev
@@ -32,12 +35,12 @@ services:
   postgres:
     image: postgres:14.5-bullseye
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - portfolio-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: marimbagod
       POSTGRES_PASSWORD: marimbagod
 
-  volumes:
-    postgres_data:
-      external: true
+volumes:
+  portfolio-data:
+    external: true

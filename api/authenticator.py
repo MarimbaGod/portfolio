@@ -1,12 +1,12 @@
 import os
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jwtdown_fastapi.authentication import Authenticator
-import bcrypt
 import jwt
+import bcrypt
 from datetime import datetime, timedelta
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "token")
+
 
 def authenticate_user(username: str, password: str):
     env_username = os.environ.get("USERNAME")
@@ -28,28 +28,10 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, os.environ["SECRET_KEY"], algorithm="HS256")
     return encoded_jwt
-# class MyAuthenticator(Authenticator):
-#     async def get_account_data(
-#         self,
-#         username: str,
-#         users: UserRepository,
-#     ):
-#         return users.get_user(username)
 
-#     def get_account_getter(
-#         self,
-#         users: UserRepository = Depends(),
-#     ):
-#         return users
-
-#     def get_hashed_password(self, user: UserOutWithPassword):
-#         # Return encrypted password from userout with password object
-#         return user.hashed_password
-
-#     def get_account_data_for_cookie(self, user: UserIn):
-#         # Return the username for the data for the cookie
-#         # Return TWO values from this method
-#         return user.username, UserOut(**user.dict())
-
-
-# authenticator = MyAuthenticator(os.environ["SIGNING_KEY"])
+async def validate_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, os.environ.get("SECRET_KEY"),  algorithms=["HS256"])
+        return True
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication")
