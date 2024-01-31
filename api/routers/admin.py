@@ -26,6 +26,10 @@ from datetime import datetime, timedelta
 router = APIRouter()
 project_repo = ProjectRepository()
 
+class HttpError(BaseModel):
+    detail: str
+
+
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
@@ -47,7 +51,10 @@ async def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=401, detail="Incorrect Credentials")
 
 
-@router.post("/admin/projects", response_model=ProjectInDB)
+@router.post("/admin/projects/add", response_model=ProjectInDB)
 async def add_project(project: Project, _ = Depends(validate_token)):
     new_project = project_repo.add_project(project)
     return new_project
+
+
+@router.delete("/admin/projects/delete", response_model=bool | HttpError)
