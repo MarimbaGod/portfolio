@@ -58,3 +58,4 @@ async def add_project(project: Project, _ = Depends(validate_token)):
 
 
 @router.delete("/admin/projects/delete", response_model=bool | HttpError)
+async def delete_project(project: Project, _ = Depends(validate_token)):
